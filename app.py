@@ -6,20 +6,25 @@ import logging
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Folder to store downloaded files
 DOWNLOAD_FOLDER = "downloads"
 
 def sanitize_filename(filename):
+    """Sanitize the filename to remove any illegal characters and limit length."""
     sanitized = "".join(c for c in filename if c not in r'\/:*?"<>|').strip()
     return sanitized[:100] if len(sanitized) > 100 else sanitized
 
 def ensure_download_folder():
+    """Ensure the download folder exists."""
     if not os.path.exists(DOWNLOAD_FOLDER):
         os.makedirs(DOWNLOAD_FOLDER)
 
 def download_video(url, folder_path=None):
+    """Download a video from YouTube."""
     ensure_download_folder()
     try:
         yt = YouTube(url)
@@ -33,6 +38,7 @@ def download_video(url, folder_path=None):
         raise
 
 def download_audio(url, folder_path=None):
+    """Download audio from a YouTube video."""
     ensure_download_folder()
     try:
         yt = YouTube(url)
@@ -46,6 +52,7 @@ def download_audio(url, folder_path=None):
         raise
 
 def download_playlist(url):
+    """Download all videos in a YouTube playlist."""
     ensure_download_folder()
     try:
         playlist = Playlist(url)
@@ -60,6 +67,7 @@ def download_playlist(url):
         raise
 
 def download_audio_playlist(url):
+    """Download audio from all videos in a YouTube playlist."""
     ensure_download_folder()
     try:
         playlist = Playlist(url)
@@ -75,10 +83,12 @@ def download_audio_playlist(url):
 
 @app.route('/')
 def index():
+    """Serve the index.html file."""
     return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/download', methods=['POST'])
 def download():
+    """Handle download requests."""
     data = request.json
     url = data.get('url')
     download_type = data.get('type')
@@ -103,6 +113,6 @@ def download():
         return jsonify({"message": "Download successful"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 if __name__ == '__main__':
     app.run(debug=True)
