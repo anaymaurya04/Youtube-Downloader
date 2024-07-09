@@ -90,6 +90,8 @@ def index():
 def download():
     """Handle download requests."""
     data = request.json
+    logger.info(f"Received request data: {data}")
+    
     url = data.get('url')
     download_type = data.get('type')
 
